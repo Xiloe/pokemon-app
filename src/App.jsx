@@ -1,16 +1,19 @@
 import { useState, useEffect } from "react";
-import { PokemonList } from "./components/PokemonList";
-
 import axios from "axios";
+
+import { PokemonList } from "./components/PokemonList";
 import { Pagination } from "./components/Pagination";
 
 function App() {
   const [pokemon, setPokemon] = useState([]);
-  const [currentPageUrl, setCurrentPageUrl] = useState(
-    "https://pokeapi.co/api/v2/pokemon"
-  );
-  const [nextPageUrl, setNextPageUrl] = useState();
-  const [prevPageUrl, setPrevPageUrl] = useState();
+  const [page, setPage] = useState({
+    count: 0,
+    current: 1,
+    currentUrl: "https://pokeapi.co/api/v2/pokemon",
+    nextUrl: "",
+    prevUrl: "",
+  });
+
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -18,31 +21,54 @@ function App() {
     let cancel = null;
 
     axios
-      .get(currentPageUrl, {
+      .get(page.currentUrl, {
         cancelToken: new axios.CancelToken((c) => (cancel = c)),
       })
       .then((res) => {
         setLoading(false);
-        setPokemon(res.data.results.map((pokemon) => pokemon.name));
-        setNextPageUrl(res.data.next);
-        setPrevPageUrl(res.data.previous);
+        setPokemon(res.data.results);
+        setPage((prevPage) => {
+          return {
+            ...prevPage,
+            count: Math.ceil(res.data.count / 20),
+            nextUrl: res.data.next,
+            prevUrl: res.data.previous,
+          };
+        });
       });
 
     // useEffect cleanup function
     // Prevent old requests from running after a new request has been made
     return () => cancel;
-  }, [currentPageUrl]);
+  }, [page.currentUrl]);
 
-  const goToNextPage = () => setCurrentPageUrl(nextPageUrl);
-  const goToPrevPage = () => setCurrentPageUrl(prevPageUrl);
+  const goToNextPage = () =>
+    setPage((prevPage) => {
+      return {
+        ...prevPage,
+        current: prevPage.current + 1,
+        currentUrl: prevPage.nextUrl,
+      };
+    });
+
+  const goToPrevPage = () =>
+    setPage((prevPage) => {
+      return {
+        ...prevPage,
+        current: prevPage.current - 1,
+        currentUrl: prevPage.prevUrl,
+      };
+    });
 
   if (loading) return "Loading...";
   return (
     <>
+      <h1 className="text-4xl text-center">Pokemon List</h1>
       <PokemonList pokemon={pokemon} />
       <Pagination
-        goToNextPage={nextPageUrl ? goToNextPage : null}
-        goToPrevPage={prevPageUrl ? goToPrevPage : null}
+        page={page}
+        goToNextPage={page.nextUrl ? goToNextPage : null}
+        goToPrevPage={page.prevUrl ? goToPrevPage : null}
       />
     </>
   );
