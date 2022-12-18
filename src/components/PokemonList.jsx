@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
+import { Loading } from "./Loading";
+
 const Pokemon = ({ pokemon }) => {
   const [pokemonJSON, setPokemonJSON] = useState({});
 
@@ -10,7 +12,7 @@ const Pokemon = ({ pokemon }) => {
     });
   }, []);
 
-  if (!pokemonJSON.id) return "Loading...";
+  if (!pokemonJSON.id) return <Loading />;
 
   return (
     <div className="flex flex-col justify-center items-center bg-slate-500 w-64 h-80 m-5 shadow-lg rounded-lg">

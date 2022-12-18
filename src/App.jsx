@@ -3,6 +3,7 @@ import axios from "axios";
 
 import { PokemonList } from "./components/PokemonList";
 import { Pagination } from "./components/Pagination";
+import { Loading } from "./components/Loading";
 
 function App() {
   const [pokemon, setPokemon] = useState([]);
@@ -60,7 +61,7 @@ function App() {
       };
     });
 
-  if (loading) return "Loading...";
+  if (loading) return <Loading />;
   return (
     <>
       <h1 className="text-4xl text-center">Pokemon List</h1>
